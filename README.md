@@ -185,3 +185,107 @@ git merge --abort
 # rebase 중단 (rebase 이전 상태로 복원)
 git rebase --abort
 ```
+
+## Github 사용하기
+
+### 1. 원격 저장소 사용하기 (remote)
+
+```bash
+# 원격 저장소 목록 확인
+git remote
+
+# 원격 저장소 상세 정보 확인 (URL 포함)
+git remote -v
+
+# 원격 저장소 추가
+git remote add <원격이름> <저장소URL>
+
+# 원격 저장소 이름 변경
+git remote rename <기존이름> <새이름>
+
+# 원격 저장소 제거
+git remote remove <원격이름>
+```
+
+> **참고:** 기본 원격 저장소 이름은 관례적으로 `origin`을 사용한다.
+
+---
+
+### 2. push와 pull
+
+#### 기본 사용법
+
+```bash
+# 로컬 커밋을 원격 저장소에 업로드
+git push
+
+# 원격 저장소의 변경사항을 로컬로 가져와 병합
+git pull
+```
+
+#### pull 할 것이 있을 때 pull 하는 두 가지 방법
+
+원격에 새로운 커밋이 있고, 로컬에도 새로운 커밋이 있을 때 pull 방식을 선택할 수 있다.
+
+```bash
+# merge 방식 (기본값): 병합 커밋을 생성
+git pull --no-rebase
+
+# rebase 방식: 로컬 커밋을 원격 커밋 뒤로 재배치
+git pull --rebase
+```
+
+| 방식              | 특징                               |
+| ----------------- | ---------------------------------- |
+| `--no-rebase`     | 병합 커밋이 남아 이력이 보존됨     |
+| `--rebase`        | 히스토리가 깔끔한 직선으로 정리됨  |
+
+#### pull 할 때 충돌 해결
+
+pull 시 같은 파일의 같은 부분을 수정했다면 충돌이 발생한다.
+
+```bash
+# merge 방식에서 충돌 해결
+# 1. 충돌 파일을 열어 원하는 내용으로 수정
+# 2. 수정 완료 후 staging & 커밋
+git add <충돌파일>
+git commit
+
+# rebase 방식에서 충돌 해결
+# 1. 충돌 파일을 열어 원하는 내용으로 수정
+# 2. 수정 완료 후 staging & rebase 계속
+git add <충돌파일>
+git rebase --continue
+```
+
+#### 로컬의 내역 강제 push
+
+```bash
+# 로컬의 이력을 원격에 강제로 덮어씌우기
+git push --force
+```
+
+> **주의:** `--force`는 원격의 커밋을 덮어쓰므로 협업 시 다른 사람의 작업을 날릴 수 있다. 신중하게 사용해야 한다.
+
+---
+
+### 3. 원격의 브랜치 다루기
+
+```bash
+# 원격 브랜치 명시 및 추적 설정 (-u: --set-upstream)
+git push -u origin <브랜치명>
+```
+
+> 최초 push 시 `-u` 옵션을 사용하면 이후 `git push`, `git pull`만으로 해당 원격 브랜치와 연동된다.
+
+```bash
+# 로컬 + 원격 브랜치 목록 전체 확인
+git branch --all
+git branch -a
+
+# 원격의 브랜치를 로컬에 받아와서 전환 (-t: --track)
+git switch -t origin/<브랜치명>
+
+# 원격의 브랜치 삭제
+git push <원격이름> --delete <브랜치명>
+```
