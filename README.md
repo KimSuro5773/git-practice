@@ -289,3 +289,121 @@ git switch -t origin/<브랜치명>
 # 원격의 브랜치 삭제
 git push <원격이름> --delete <브랜치명>
 ```
+
+## Git의 내부 구조 더 알아보기
+
+### 1. Git의 3가지 공간
+
+Git은 파일을 **3가지 공간**으로 관리한다.
+
+![Git의 3가지 공간](Git_Area_Image.png)
+
+| 공간                          | 설명                                                    |
+| ----------------------------- | ------------------------------------------------------- |
+| **Working directory** (작업 디렉터리) | 실제 파일을 수정하는 공간. Untracked 파일과 Tracked 파일이 존재한다. |
+| **Staging area** (스테이징 영역)      | `git add`로 커밋할 준비가 된 변경사항이 올라가는 공간               |
+| **Repository** (저장소)               | `git commit`으로 확정된 커밋 이력이 저장되는 공간 (`.git` 디렉터리)  |
+
+```
+Working directory  --add-->  Staging area  --commit-->  Repository
+                   <-----------되돌림(reset 등)-----------
+```
+
+- **Untracked**: Git이 아직 추적하지 않는 새 파일
+- **Tracked**: Git이 관리하고 있는 파일 (수정됨, 스테이징됨, 커밋됨 등)
+
+---
+
+### 2. HEAD
+
+**HEAD**는 현재 작업 중인 브랜치의 **최신 커밋**을 가리키는 포인터이다.
+
+![HEAD 개념](Git_HEAD.png)
+
+위 그림처럼 각 브랜치(main, delta-branch, alpha-branch, beta-branch)는 자신만의 최신 커밋을 가리키며, HEAD는 현재 체크아웃된 브랜치의 끝을 가리킨다.
+
+#### checkout으로 HEAD 이동하기
+
+```bash
+# 한 커밋 이전으로 이동
+git checkout HEAD^
+
+# 세 커밋 이전으로 이동
+git checkout HEAD~3
+```
+
+- `^`: 한 단계 이전 커밋
+- `~N`: N단계 이전 커밋
+
+#### HEAD를 사용하여 reset 하기
+
+```bash
+# 한 커밋 전으로 reset (변경사항은 staging area에 유지)
+git reset --soft HEAD^
+
+# 한 커밋 전으로 reset (변경사항은 working directory에 유지)
+git reset --mixed HEAD^
+git reset HEAD^
+
+# 한 커밋 전으로 reset (변경사항 모두 삭제)
+git reset --hard HEAD^
+```
+
+#### 한 단계 되돌리기
+
+```bash
+# 이전에 있던 브랜치 또는 커밋으로 되돌아가기
+git checkout -
+```
+
+> `git checkout -`는 직전에 체크아웃했던 위치로 다시 전환한다. 브랜치 간 빠르게 오갈 때 유용하다.
+
+---
+
+### 3. fetch vs pull
+
+#### fetch
+
+원격 저장소의 최신 커밋을 로컬로 **가져오기만** 한다. 현재 작업 중인 파일에는 영향을 주지 않는다.
+
+```bash
+# 원격의 최신 정보 가져오기
+git fetch
+
+# 특정 원격 저장소만 fetch
+git fetch origin
+```
+
+> fetch 후에는 원격의 변경사항이 `origin/main` 등의 원격 추적 브랜치에만 반영된다. 로컬 브랜치에 적용하려면 별도로 merge 또는 rebase가 필요하다.
+
+#### pull
+
+원격 저장소의 최신 커밋을 가져와서 **자동으로 병합**까지 수행한다. 즉, `fetch` + `merge`(또는 `rebase`)이다.
+
+```bash
+# fetch + merge
+git pull
+
+# fetch + rebase
+git pull --rebase
+```
+
+| 명령어       | 동작                         | 로컬 파일 영향 |
+| ------------ | ---------------------------- | -------------- |
+| `git fetch`  | 가져오기만                   | 없음           |
+| `git pull`   | 가져오기 + 병합(merge/rebase) | 있음           |
+
+#### 원격의 새 브랜치 확인 및 가져오기
+
+원격에 새로운 브랜치가 추가되었을 때, fetch 후 확인하고 가져올 수 있다.
+
+```bash
+# 원격 정보 업데이트
+git fetch
+
+# 원격 브랜치의 내용을 임시로 확인 (Detached HEAD)
+git checkout origin/<브랜치명>
+
+# 원격 브랜치를 로컬에 받아와서 전환
+git switch -t origin/<브랜치명>
+```
